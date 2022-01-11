@@ -22,41 +22,29 @@ jobs:
         uses: golangci/golangci-lint-action@v2
         with:
           version: latest
-          args:
-                 -v
-                 --max-same-issues 10
-                 --disable-all
-                 --exclude-use-default=false
-                 -E asciicheck
-                 -E deadcode
-                 -E errcheck
-                 -E forcetypeassert
-                 -E gocritic
-                 -E gofmt
-                 -E goimports
-                 -E gosimple
-                 -E govet
-                 -E ineffassign
-                 -E misspell
-                 -E staticcheck
-                 -E structcheck
-                 -E typecheck
-                 -E unused
-                 -E varcheck
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ env.GO_VERSION }}
+      - name: Download modules
+        run: go mod download
   tests:
     strategy:
         matrix:
-          go-versions: [ 1.17.x ]
           platform: [ ubuntu-latest, windows-latest ]
-        runs-on: ${{ matrix.platform }}
-        steps:
-        - name: Install Go
-          uses: actions/setup-go@v2
-          with:
-            go-version: ${{ matrix.go-version }}
-        - name: Checkout code
-          uses: actions/checkout@v2
-        - name: Build
-          run: go build -v ./...
-        - name: Test
-          run: go test -v -race ./...
+    runs-on: ${{ matrix.platform }}
+    steps:
+    - name: Install Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: ${{ env.GO_VERSION }}
+    - name: Checkout code
+      uses: actions/checkout@v2
+    - name: Build
+      run: go build -v ./...
+    - name: Test
+      run: go test -v -race ./...
