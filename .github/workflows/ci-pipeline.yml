@@ -1,0 +1,66 @@
+# This is a basic workflow to help you get started with Actions
+name: CI
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the master branch
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+env:
+  GO_VERSION: '1.16.1'
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ env.GO_VERSION }}
+      - name: Linter
+        uses: golangci/golangci-lint-action@v2
+        with:
+          version: latest
+          args:
+                 -v
+                 --max-same-issues 10
+                 --disable-all
+                 --exclude-use-default=false
+                 -E asciicheck
+                 -E deadcode
+                 -E errcheck
+                 -E forcetypeassert
+                 -E gocritic
+                 -E gofmt
+                 -E goimports
+                 -E gosimple
+                 -E govet
+                 -E ineffassign
+                 -E misspell
+                 -E staticcheck
+                 -E structcheck
+                 -E typecheck
+                 -E unused
+                 -E varcheck
+  tests:
+    strategy:
+        matrix:
+          go-versions: [ 1.17.x ]
+          platform: [ ubuntu-latest, windows-latest ]
+        runs-on: ${{ matrix.platform }}
+        steps:
+        - name: Install Go
+          uses: actions/setup-go@v2
+          with:
+            go-version: ${{ matrix.go-version }}
+        - name: Checkout code
+          uses: actions/checkout@v2
+        - name: Build
+          run: go build -v ./...
+        - name: Test
+          run: go test -v -race ./...
